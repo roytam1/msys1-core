@@ -1,3 +1,203 @@
+2003-07-07  Earnie Boyd  <earnie@users.sf.net>
+
+	* path.cc (msys_p2w): Correction for ``foo=c:/bar'' constructs.
+
+2003-07-01  Luke Dunstan <infidel@users.sf.net>
+
+	* syscalls.cc (check_posix_perm): Off by one allocation of memory for
+	char *root.
+
+2003-06-30  Earnie Boyd  <earnie@users.sf.net>
+
+	* environ.cc: Add debug_printf throughout.
+	(winenv): Add a FIXME workaround that reverses the value of keep_posix.
+	Add a stab in the dark pad of (MAX_PATH * 256) to the malloc of the
+	envblock pointer (Note: this is likely to be removed).
+	* malloc.cc: Add malloc_printf throughout.  Add TRACE_IN throughout.
+	* msys.h (debugnow): New macro intended for more immediate debugging
+	and not meant to be left in the source (Note: must -Ddebugger to make
+	the macro useful).
+	* msys_symlink.cc: Add include of winsup.h.
+	(msys_symlink): Add a FIXME to identify a resource leak.
+	* path.cc (check_sysfile): Deleted.
+	(symlink_info::check): Add initialization of HANDLE h to stop warning.
+	(IsAbsWin32Path): Recode.
+	(ScrubRetpath): New static function used by msys_p2w.
+	(msys_p2w): Streamline the code and use ScrubRetpath if the path has
+	changed else just retpath.  Also, protect the argument values from
+	changing.
+	* path.h (path_conv::iscygexec): Add recognition of an msys dependent
+	executable via use of IsMsys function.
+	* spawn.cc: Move char *envblockarg to global space and make static.
+	(spawn_guts): Remove use of IsMsys() function.
+	Streamline newargv population.
+	Streamline envblock and envblockarg population.
+	Use envblockarg in the CreateProcess function instead of envblock.
+	Remove child->copysigs (myself) call.
+	* sync.cc (muto::~muto): Comment out.
+	* sync.h (~muto): Ditto.
+	* syscalls.cc (check_posix_perm): Use alloca instead of new operator.
+	* winsup.h (TRACE_IN): Add a TRACING filter to make it work.
+	(IsMsys): Change the declaration.
+	* include/sys/cygwin.h (msys_p2w): Ditto.
+	
+2003-06-16  Earnie Boyd  <earnie@users.sf.net>
+
+	* path.cc (cygwin_conv_to_win32_path): Copy data to win32_path, don't
+	change the pointer value.
+	* spawn.cc (spawn_guts): Free tmpbuf if needed.  Ditto for wpath.
+	Set envblockarg to contain 0 for it's length.
+
+2003-06-13  Earnie Boyd  <earnie@users.sf.net>
+
+	* environ.cc:  Remove DO_CPP_NEW filters througout.
+	* exceptions.cc (exception): Output version and build date info to the
+	stackdump file.
+	* msys_symlink.cc (msys_symlink): Use msys_p2w() instead of
+	cygwin_conv_to_win32_path().
+	* spawn.cc (spawn_guts): Ditto.
+	* path.cc (msys_p2w): New function (copy previous
+	cygwin_conv_to_win32_path and heavily modify).
+	(cygwin_conv_to_win32_path): Remove contents and use msys_p2w.
+	include/sys/cygwin.h (msys_p2w): Add declaration.
+
+2003-06-11  Earnie Boyd  <earnie@users.sf.net>
+
+	* spawn.cc (spawn_guts): Use malloc instead of cmalloc for envblock.
+
+2003-06-03  Earnie Boyd  <earnie@users.sf.net>
+
+	* spawn.cc: Correct malloc size algorithm and insure that pointers are
+	set before freeing.
+
+2003-06-03  Earnie Boyd  <earnie@users.sf.net>
+
+	* spawn.cc: Use cmalloc and friends instead of the c++ new operator
+	and friends.
+	* path.cc: Use std::min instead of min for GCC >= 3.0.
+
+2003-05-16  Earnie Boyd  <earnie@users.sf.net>
+
+	* ismsys.cc: Remove include of windows.h since winsup.h includes it.
+
+2003-04-18  Earnie Boyd  <earnie@users.sf.net>
+
+	* Makefile.in (cygrun.exe): Correct link step by including -lgcc
+	appropriately.
+	* debug.h (being_debugged()): Define.
+	* errno.cc (_sys_errlist[]): Remove extern modifier so that dllexport
+	happens correctly.
+	(_sys_nerr): Add const modifier.
+	* exceptions.cc (status_info[]): Move NO_COPY modifier to struct tag.
+	* fhandler.cc (CHUNK_SIZE): Remove const modifier.
+	(fhandler_base::puts_readahead): Remove argument 2 default value.
+	(fhandler_base::set_readahead): Ditto.
+	* fhandler_dsp.cc (Audio::open): Ditto.
+	(fhandler_dev_dsp::open): Ditto.
+	* fhandler_console.cc (keytable[]): Remove const modfier.
+	* localtime.cc (gmt[]): Ditto.
+	* net.cc (host_errmap[]): Ditto.
+	* strace.cc (tab): Ditto.
+	* window.cc (classname): Ditto.
+	* winsup.h (strlen): Remove define.
+	(strcmp): Ditto.
+	(strcpy): Ditto.
+	(memcpy): Ditto.
+	(memcmp): Ditto.
+	
+2003-04-18  Earnie Boyd  <earnie@users.sf.net>
+
+	* path.cc (cygwin_conv_to_win32_path): Properly handle /foo/../bar path.
+
+2003-04-18  Earnie Boyd  <earnie@users.sf.net>
+
+	* autoload.cc (NetServerEnum): Add load.
+	* debug.h (being_debugged()): Define.
+	* msys.h: Add Copyright and multiple inclusion protection.
+	(auto_lock): Define class.  Thanks to Luke Dunstan.
+	* path.cc (mount_info::init): Use auto_lock class to control thread.
+	(mount_info::read_mounts): Initialize thread lock and do initial build
+	of mount table.
+	(mount_info::add_item): Protect with auto_lock.
+	(mount_info::del_item): Ditto.
+	(conv_path_list_buf_size): Move global class to mount_info class.
+	(cygwin_win32_to_posix_path_list_buf_size): Must now use object name
+	to call conv_path_list_buf_size function.
+	(cygwin_posix_to_win32_path_list_buf_size): Ditto.
+	shared.cc (shared_name): Use different algorithm for ulModuleHash value.
+	shared_info.h (mount_info nmounts): Move from public to private.
+	(mount_info mount[]): Ditto.
+	(conv_path_list_buf_size()): Add as public member.
+
+2003-03-28  Earnie Boyd  <earnie@users.sf.net>
+
+	* cygthread.cc: Copy new file from Cygwin.
+	* cygthread.h: Ditto.
+	* winbase.h: Ditto.
+	* Makefile.in (DLL_OFILES): Add cygthread.o and reformat.
+	* path.cc (CHECK_MOUNT_EVENT): New macro, currently unused.
+	(mount_info::read_mounts_thread): New static function, thread to watch
+	for changes to /etc/fstab.
+	(mount_info::read_mounts): Renamed original read_mounts and created
+	a new read_mounts to call read_mounts_thread.
+	(mount_info::read_mounts2): Renamed original read_mounts to be called
+	from read_mounts_thread.
+	shared_info.h (mount_info): Add new elements.
+	spawn.cc (spawn_guts): Add a proposed Cygwin change.
+	winsup.h: Following changes copied from recent versions of Cygwin.
+	(iovec): New struct.
+	(check_iovec_for_read): New function.
+	(check_iovec_for_write): Ditto.
+	(__check_invalid_read_ptr_errno): Ditto.
+	(stat_worker): Ditto.
+	(low_priority_sleep): Ditto.
+	
+2003-03-21  Earnie Boyd  <earnie@users.sf.net>
+
+	* uinfo.cc (internal_getlogin): Move check for USERNAME variable to
+	global space instead of iswinnt filter.
+	* Makefile.in: Add -lnetapi32 to the DLL build command.
+	* autoload.cc: Copy verbatum from current Cygwin CVS.
+	* fhandler_socket.cc: Move include of unistd.h after winsock2.h for
+	protection of gethostname declaration.
+	* net.cc: Ditto.
+	* heap.cc: Move a FIXME declaration into the procedure instead of
+	global space.
+	* pinfo.cc: Use NtQuerySystemInformation instead of the Zw version.
+	* shared.cc (shared_name): Use hash_path_name for uniqueness.
+	* tty.cc: Incorporate current Cygwin CVS changes.
+
+2003-02-17  Earnie Boyd  <earnie@users.sf.net>
+
+	* cygheap.cc (init_cygheap::etc_changed): Use more appropriate object
+	name.
+	* heap.cc (heap_init): Add FIXME debug macro.
+	
+2003-02-12  Earnie Boyd  <earnie@users.sf.net>
+
+	* fhandler.cc: Add TRACE_IN throughout.
+	* fhandler_tty.cc: Ditto.
+	* signal.cc: Ditto.
+	* sigproc.cc: Ditto.
+	* select.cc: Ditto.
+	(select_stuff::test_and_set): Remove needless duplicate filters.
+	(thread_pipe): Code refactor.
+	(thread_serial): Ditto.
+	* winsup.h (FIXME): Change macro to identify file, function and line.
+	* spawn.cc: Format of FIXME changed.
+	* path.cc (cygwin_conv_to_win32_path): Move the test for a valid path
+	variable before initialization of variables.
+	Free retpath before exiting to fix resource leak.
+
+2003-01-24  Earnie Boyd  <earnie@users.sf.net>
+
+	* path.cc (cygwin_conv_to_win32_path): Use cygheap's cmalloc, crealloc
+	and cfree functions to avoid an apparent malloc misfeature.
+
+2003-01-02  Earnie Boyd  <earnie@users.sf.net>
+
+	* include/cygwin/version.h: Increment version to 1.0.9.
+
 2002-12-03  Earnie Boyd  <earnie@users.sf.net>
 
 	* path.cc (cygwin_conv_to_win32_path): Add filtering to handle strings

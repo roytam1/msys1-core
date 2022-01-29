@@ -48,8 +48,6 @@ class mount_info
  public:
   DWORD version;
   DWORD sys_mount_table_counter;
-  int nmounts;
-  mount_item mount[MAX_MOUNTS];
 
   /* cygdrive_prefix is used as the root of the path automatically
      prepended to a path when the path has no associated mount.
@@ -57,9 +55,15 @@ class mount_info
   char cygdrive[MAX_PATH];
   size_t cygdrive_len;
   unsigned cygdrive_flags;
+  CRITICAL_SECTION lock;
  private:
+  int nmounts;
+  mount_item mount[MAX_MOUNTS];
   int posix_sorted[MAX_MOUNTS];
   int native_sorted[MAX_MOUNTS];
+  LPDWORD threadID;
+  HANDLE threadH;
+  char RootPath[MAX_PATH+1];
 
  public:
   /* Increment when setting up a reg_key if mounts area had to be
@@ -88,11 +92,14 @@ class mount_info
 			 char* system_flags);
 
   void import_v1_mounts ();
+  int conv_path_list_buf_size (char const * path_list, int to_posix_p);
 
  private:
 
   void sort ();
+  static DWORD WINAPI read_mounts_thread (LPVOID thrdParam);
   void read_mounts (reg_key& r);
+  void read_mounts2 (void);
   void read_v1_mounts (reg_key r, unsigned which);
   void mount_slash ();
   void to_registry ();

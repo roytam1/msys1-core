@@ -17,7 +17,6 @@
 extern "C" {
 #endif
 
-#define UT_IDLEN	2
 #define UT_LINESIZE	16
 #define UT_NAMESIZE	16
 #define UT_HOSTSIZE	256
@@ -28,7 +27,7 @@ struct utmp
  short	ut_type;	
  pid_t	ut_pid;		
  char	ut_line[UT_LINESIZE];
- char	ut_id[UT_IDLEN];
+ char	ut_id[2];
  time_t ut_time;	
  char	ut_user[UT_NAMESIZE];	
  char	ut_host[UT_HOSTSIZE];	
