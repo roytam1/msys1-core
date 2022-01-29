@@ -1,3 +1,41 @@
+2012.11.21  Cesar Strauss  <cestrauss@gmail.com>
+
+	* include/cygwin/version.h: Increment version to 1.0.18.
+
+2012.11.07  Cesar Strauss  <cestrauss@gmail.com>
+
+	* spawn.cc (spawn_guts): Enable quoting of globbing characters
+	on the command-line of native applications.
+
+2011.10.12  Fabian Greffrath  <fabian+mingw@greffrath.com>
+	    Cesar Strauss  <cestrauss@gmail.com>
+
+	In case of an absent /etc directory, keep on trying to monitor
+	the root directory for its creation instead of silently failing.
+
+	* cygwin/path.cc (mount_info::read_mounts_thread): If the initial
+	attempt to monitor the /etc directory fails, do not exit the process
+	but repeatedly try to monitor /etc on each change to the root directory.
+	Once a valid monitor handle is returned, keep on monitoring /etc as usual.
+
+2011.10.12  Cesar Strauss  <cestrauss@gmail.com>
+
+	* passwd.cc (read_etc_passwd): If HOME is not set, base the default
+	user home directory on the current user name, instead of falling back
+	to "/".
+	(search_for): If the input user name is unknown, return NULL instead
+	of returning a default entry.
+
+2011.06.21  Teemu Nätkinniemi  <tnatkinn>
+
+	* Import Cygwin 1.3.4
+	* Backport wincap.cc, wincap.h and ntdll.h from Cygwin 1.5.25-15
+	* wincap.cc backport bugfixes from Cygwin CVS and add support for
+	Windows 7
+	* ntdll.h (_PROCESSINFOCLASS) backport WOW64 fixes from Cygwin
+	HEAD
+	* ismsys.cc (IsMsys) use wincap capability
+
 2011.04.18  Cesar Strauss  <cestrauss@gmail.com>
 
 	* include/cygwin/version.h: Increment version to 1.0.17.

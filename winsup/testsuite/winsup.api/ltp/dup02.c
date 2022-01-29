@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  *
  */
-/* $Id: dup02.c,v 1.2 2000/09/06 14:21:53 duda Exp $ */
+/* $Id$ */
 /**********************************************************
  * 
  *    OS Test - Silicon Graphics, Inc.

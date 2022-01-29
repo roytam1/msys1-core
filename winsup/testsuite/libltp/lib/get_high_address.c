@@ -1,4 +1,4 @@
-/* $Header: /cvs/src/src/winsup/testsuite/libltp/lib/get_high_address.c,v 1.1 2000/09/03 03:52:30 cgf Exp $ */
+/* $Header$ */
 
 /*
  *	(C) COPYRIGHT CRAY RESEARCH, INC.

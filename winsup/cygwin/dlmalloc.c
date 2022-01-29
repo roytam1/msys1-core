@@ -27,7 +27,7 @@
  * Documentation:
  *  malloc_usable_size(P) is equivalent to realloc(P, malloc_usable_size(P))
  *
- * $Log: dlmalloc.c,v $
+ * $Log$
  * Revision 1.1  2001/04/24 15:25:30  duda
  * * dlmalloc.c: New file. Port of Doug Lea's malloc
  * * dlmalloc.h: Ditto.

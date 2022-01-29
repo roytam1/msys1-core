@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
 
-/* $Id: test.h,v 1.2 2000/09/06 14:21:52 duda Exp $ */
+/* $Id$ */
 
 #ifndef __TEST_H__
 #define __TEST_H__

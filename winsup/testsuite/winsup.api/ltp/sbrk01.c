@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  *
  */
-/* $Id: sbrk01.c,v 1.1 2001/10/15 22:22:33 earnie Exp $ */
+/* $Id$ */
 /**********************************************************
  * 
  *    OS Test - Silicon Graphics, Inc.

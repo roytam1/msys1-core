@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
 
-/* $Id: rmobj.c,v 1.1 2000/09/03 03:52:30 cgf Exp $ */
+/* $Id$ */
 
 /**********************************************************
  *

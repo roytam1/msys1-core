@@ -29,7 +29,7 @@
  * 
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
-/* $Id: access01.c,v 1.3 2001/03/10 16:45:28 duda Exp $ */
+/* $Id$ */
 /**********************************************************
  * 
  *    OS Test - Silicon Graphics, Inc.

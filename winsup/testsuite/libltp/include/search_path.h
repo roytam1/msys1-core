@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
 
-/* $Id: search_path.h,v 1.1 2000/09/03 03:52:30 cgf Exp $ */
+/* $Id$ */
 
 
 int search_path(char *cmd, char *res_path, int access_mode, int fullpath);

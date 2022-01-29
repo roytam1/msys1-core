@@ -8,7 +8,7 @@ This software is a copyrighted work licensed under the terms of the
 Cygwin license.  Please consult the file "CYGWIN_LICENSE" for
 details. */
 
-/*	$Id: regmagic.h,v 1.1 1997/10/07 21:54:10 noer Exp $ */
+/*	$Id$ */
 
 /*
  * The first byte of the regexp internal "program" is actually this magic

@@ -14,7 +14,7 @@ details. */
  * Caveat:  this is V8 regexp(3) [actually, a reimplementation thereof],
  * not the System V one.
  *
- *	$Id: regexp.h,v 1.1 1997/10/07 21:54:10 noer Exp $
+ *	$Id$
  */
 
 #define NSUBEXP  10

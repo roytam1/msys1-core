@@ -1,8 +1,8 @@
 File:		     MSYS_VS_CYGWIN
 Copyright (C):	     2001: Earnie Boyd  <earnie@users.sf.net>
 Distribution Rights: See MSYS_LICENSE
-File $Revision:	     $
-File Revision $Date:  $
+File $Revision$
+File Revision $Date$
 
 mount:	The mount command is only used to display all mount points.  The mount
 points for the very important are automounted.  Nothing is stored in the Win32

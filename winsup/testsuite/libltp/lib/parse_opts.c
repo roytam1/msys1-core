@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
 
-/* $Id: parse_opts.c,v 1.2 2000/09/06 14:21:52 duda Exp $ */
+/* $Id$ */
 
 /**********************************************************
  * 

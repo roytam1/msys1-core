@@ -30,7 +30,7 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  */
 
-/* $Id: tst_sig.c,v 1.2 2000/09/06 14:21:53 duda Exp $ */
+/* $Id$ */
 
 /*****************************************************************************
 	OS Testing  - Silicon Graphics, Inc.
