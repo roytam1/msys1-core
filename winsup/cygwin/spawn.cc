@@ -41,11 +41,8 @@ details. */
 static char *envblockarg = (char *)NULL;
 static suffix_info std_suffixes[] =
 {
-  suffix_info ("", 1), suffix_info (".exe", 1),
-#if 0
-  suffix_info (".com"), suffix_info (".cmd"),
-  suffix_info (".bat"), suffix_info (".dll"),
-#endif
+  suffix_info ("", 1),
+  suffix_info (".exe", 1),
   suffix_info (NULL)
 };
 
@@ -314,6 +311,7 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 {
   TRACE_IN;
   BOOL rc;
+  bool ismsysdep;
   pid_t cygpid;
   sigframe thisframe (mainthread);
 #if DEBUGGING
@@ -347,7 +345,7 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 
   child_info_spawn ciresrv;
   si.lpReserved2 = (LPBYTE) &ciresrv;
-  si.cbReserved2 = sizeof (ciresrv);
+  si.cbReserved2 = sizeof (ciresrv) - 4; // Do not count the filler bytes
 
   DWORD chtype;
   if (mode != _P_OVERLAY && mode != _P_VFORK)
@@ -364,7 +362,7 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
       ProtectHandle (spr);
     }
 
-  init_child_info (chtype, &ciresrv, (mode == _P_OVERLAY) ? myself->pid : 1, spr);
+  init_child_info (chtype, &ciresrv, sizeof(ciresrv), (mode == _P_OVERLAY) ? myself->pid : 1, spr);
   if (!DuplicateHandle (hMainProc, hMainProc, hMainProc, &ciresrv.parent, 0, 1,
 			DUPLICATE_SAME_ACCESS))
      {
@@ -502,10 +500,11 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 
   FIXME;
   // iscygexec needs adjusted so that it truely identifies an MSYS executable.
-  if (real_path.iscygexec ())
+  if (real_path.iscygexec ()) {
     newargv.dup_all ();
-  else
-    {
+    ismsysdep = true;
+  } else {
+    ismsysdep = false;
       for (int i = 0; i < newargv.argc; i++)
 	{
 	  //convert argv to win32
@@ -524,6 +523,11 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 	  char *p = NULL; // Temporary use pointer.
 	  const char *a; // Pointer to newargv element.
 
+	  if (i)
+	    {
+	      one_line.add (" ", 1);
+	      MALLOC_CHECK;
+	    }
 	  newargv.dup_maybe (i);
 	  a = i ? newargv[i] : (char *) real_path;
 	  HMMM(a);
@@ -564,8 +568,6 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 		one_line.add (a);
 	      one_line.add ("\"", 1);
 	    }
-	  MALLOC_CHECK;
-	  one_line.add (" ", 1);
 	  MALLOC_CHECK;
 	}
 #if 0
@@ -613,6 +615,7 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 
   int flags = CREATE_DEFAULT_ERROR_MODE | GetPriorityClass (hMainProc);
 
+  //FIXME: Is there good reason for this code?
   if (mode == _P_DETACH || !set_console_state_for_spawn ())
     flags |= DETACHED_PROCESS;
   if (mode != _P_OVERLAY)
@@ -628,13 +631,9 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 
   /* Build windows style environment list */
   char *envblock;
-  FIXME;
-  /*
-   * Why do we need to call winenv() for MSYS binary?
-   */
   if (envblockarg)
     free (envblockarg);
-  if (real_path.iscygexec ())
+  if (ismsysdep)
     envblockarg = winenv (envp, 1);
   else 
     envblockarg = winenv (envp, 0);
@@ -642,9 +641,13 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
   /* Preallocated buffer for `sec_user' call */
   char sa_buf[1024];
 
-  if (!hToken && cygheap->user.impersonated
-      && cygheap->user.token != INVALID_HANDLE_VALUE)
-    hToken = cygheap->user.token;
+  if (ismsysdep) {
+    if (!hToken && cygheap->user.impersonated
+	&& cygheap->user.token != INVALID_HANDLE_VALUE)
+      hToken = cygheap->user.token;
+  } else {
+    hToken = NULL;
+  }
 
   const char *runpath = null_app_name ? NULL : (const char *) real_path;
 
@@ -653,12 +656,16 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
   cygbench ("spawn-guts");
   if (!hToken)
     {
-      ciresrv.moreinfo->uid = getuid ();
-      FIXME;
-      /* FIXME: This leaks a handle in the CreateProcessAsUser case since the
-	 child process doesn't know about cygwin_mount_h. */
-      ciresrv.mount_h = cygwin_mount_h;
-      cygheap_setup_for_child (&ciresrv);
+      // The native process doesn't know about MSYS structures so don't fill
+      // them in for native processes.
+      if (ismsysdep) {
+	ciresrv.moreinfo->uid = getuid ();
+	FIXME;
+	/* FIXME: This leaks a handle in the CreateProcessAsUser case since the
+	   child process doesn't know about cygwin_mount_h. */
+	ciresrv.mount_h = cygwin_mount_h;
+	cygheap_setup_for_child (&ciresrv);
+      }
       rc = CreateProcess (runpath,	/* image name - with full path */
 			  one_line.buf,	/* what was passed to exec */
 					  /* process security attrs */
@@ -671,6 +678,13 @@ spawn_guts (HANDLE hToken, const char * prog_arg, const char *const *argv,
 			  0,	/* use current drive/directory */
 			  &si,
 			  &pi);
+      
+      if (!ismsysdep) {
+	//FIXME: The child process needs help.  The stdout handle is blocking.
+	//A child process that ismsysdep will execute initialization through
+	// methods of fork_child in fork.cc.  A child process that !ismsysdep
+	// doesn't have the opportunity to execute the fork_child method.
+      }
     }
   else
     {

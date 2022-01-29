@@ -50,9 +50,11 @@ static void __stdcall _cfree (void *ptr) __attribute__((regparm(1)));
 inline static void
 init_cheap ()
 {
+  TRACE_IN;
   cygheap = (init_cygheap *) VirtualAlloc ((void *) &_cygheap_start, CYGHEAPSIZE, MEM_RESERVE, PAGE_NOACCESS);
   if (!cygheap)
     {
+      system_printf ("VirtualAlloc pointer is null, %E");
       MEMORY_BASIC_INFORMATION m;
       if (!VirtualQuery ((LPCVOID) &_cygheap_start, &m, sizeof m))
 	system_printf ("couldn't get memory info, %E");
