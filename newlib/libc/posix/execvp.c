@@ -18,26 +18,6 @@ static char path_delim;
 #define PATH_DELIM ':'
 #endif
 
-/*
- * Copy string, until c or <nul> is encountered.
- * NUL-terminate the destination string (s1).
- */
-
-static char *
-_DEFUN (strccpy, (s1, s2, c),
-	char *s1 _AND
-	char *s2 _AND
-	char c)
-{
-  char *dest = s1;
-
-  while (*s2 && *s2 != c)
-    *s1++ = *s2++;
-  *s1 = 0;
-
-  return dest;
-}
-
 int
 _DEFUN (execvp, (file, argv),
 	_CONST char *file _AND
@@ -45,6 +25,7 @@ _DEFUN (execvp, (file, argv),
 {
   char *path = getenv ("PATH");
   char buf[MAXNAMLEN];
+  size_t file_len;
 
   /* If $PATH doesn't exist, just pass FILE on unchanged.  */
   if (!path)
@@ -71,17 +52,35 @@ _DEFUN (execvp, (file, argv),
   path_delim = cygwin_posix_path_list_p (path) ? ':' : ';';
 #endif
 
+  file_len = strlen (file);
   while (*path)
     {
-      strccpy (buf, path, PATH_DELIM);
-      /* An empty entry means the current directory.  */
-      if (*buf != 0 && buf[strlen(buf) - 1] != '/')
-	strcat (buf, "/");
-      strcat (buf, file);
-      if (execv (buf, argv) == -1 && errno != ENOENT)
-	return -1;
-      while (*path && *path != PATH_DELIM)
-	path++;
+      /* Find the length of the path element */
+      char *path_ptr = strchr (path, PATH_DELIM);
+      size_t path_len;
+      if (path_ptr)
+        path_len = path_ptr - path;
+      else
+        path_len = strlen (path);
+      /* Check if the combined pathname fits into the buffer */
+      if (path_len + file_len + 2 > MAXNAMLEN)
+        errno = ENAMETOOLONG;
+      else {
+        /* Combine the path element with the file name */
+        char *end_of_string = buf;
+        memcpy (end_of_string, path, path_len);
+        end_of_string += path_len;
+        /* An empty entry means the current directory.  */
+        if (path_len != 0 && path[path_len - 1] != '/')
+          *end_of_string++ = '/';
+        memcpy (end_of_string, file, file_len);
+        end_of_string += file_len;
+        *end_of_string = 0;
+        /* Try executing the resulting pathname */
+        if (execv (buf, argv) == -1 && errno != ENOENT)
+          return -1;
+      }
+      path += path_len;
       if (*path == PATH_DELIM)
 	path++;			/* skip over delim */
     }
