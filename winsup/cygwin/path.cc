@@ -1943,7 +1943,7 @@ sort_by_posix_name (const void *a, const void *b)
 }
 
 /* sort_by_native_name: qsort callback to sort the mount entries.  Sort
-   user mounts ahead of system mounts to the same POSIX path. */
+   user mounts ahead of system mounts to the same native path. */
 /* FIXME: should the user should be able to choose whether to
    prefer user or system mounts??? */
 static int
@@ -1953,7 +1953,7 @@ sort_by_native_name (const void *a, const void *b)
   mount_item *ap = mounts_for_sort + (*((int*) a));
   mount_item *bp = mounts_for_sort + (*((int*) b));
 
-  /* Base weighting on longest win32 path first so that the most
+  /* Base weighting on longest native path first so that the most
      obvious path will be chosen. */
   size_t alen = strlen (ap->native_path);
   size_t blen = strlen (bp->native_path);
@@ -1968,13 +1968,19 @@ sort_by_native_name (const void *a, const void *b)
   res = strcmp (ap->native_path, bp->native_path);
 
   if (res == 0)
-   {
-     /* need to select between user and system mount to same POSIX path */
-     if (!(bp->flags & MOUNT_SYSTEM))	/* user mount */
-      return 1;
-     else
-      return -1;
-   }
+    {
+      if (ap->flags & MOUNT_SYSTEM != bp->flags & MOUNT_SYSTEM)
+        {
+          /* need to select between user and system mount to same native path */
+          if (!(bp->flags & MOUNT_SYSTEM))	/* user mount */
+            return 1;
+          else
+            return -1;
+        }
+      else
+        /* All things being equal, sort by POSIX path */
+        return sort_by_posix_name (a, b);
+    }
 
   return res;
 }
@@ -2370,10 +2376,8 @@ int
 symlink (const char *topath, const char *frompath)
 {
   TRACE_IN;
-    int res;
-    debug_printf("symlink (%s, %s)", topath, frompath);
-    res = msys_symlink (frompath, topath);
-    return res;
+  debug_printf("symlink (%s, %s)", topath, frompath);
+  return msys_symlink (topath, frompath);
 }
 
 #ifdef NEW_SUFFIX_METHOD
@@ -3138,10 +3142,10 @@ msys_p2w (char const * const path)
       if ((sspath > 0)
 	   && (strchr (spath, '/') > 0)
 	   // 
-	   // Prevent strings beginning with -, ", or ' from being processed,
+	   // Prevent strings beginning with -, ", ', or @ from being processed,
 	   // remember that this is a recursive routine.
 	   // 
-	   && (strchr ("-\"\'", spath[0]) == 0)
+	   && (strchr ("-\"\'@", spath[0]) == 0)
 	   // 
 	   // Prevent ``foo:echo /bar/baz'' from being considered a path list.
 	   // 
@@ -3274,6 +3278,42 @@ msys_p2w (char const * const path)
 		  debug_printf("returning: %s", path);
 		  return ((char *)path);
 		}
+	    }
+	  break;
+	case '@':
+	  //
+	  // here we check for POSIX paths as attributes to a response
+	  // file argument (@file). This is specifically to support
+	  // MinGW binutils and gcc.
+	  //
+	  sspath = spath + 1;
+	  if (IsAbsWin32Path (sspath))
+	    {
+	      debug_printf("returning: %s", path);
+	      return (char *)path;
+	    }
+	  if (spath[1] == '/')
+	    {
+	      debug_printf("spath = %s", spath);
+	      char *swin32_path = msys_p2w (sspath);
+	      if (swin32_path == sspath)
+		{
+		  debug_printf("returning: %s", path);
+		  return ((char *)path);
+		}
+	      sspath = (char *)spath;
+	      sspath++;
+	      *sspath = '\0';
+	      retpathcpy (spath);
+	      *sspath = '/';
+	      retpathcat (swin32_path);
+	      free (swin32_path);
+	      return ScrubRetpath (retpath);
+	    }
+	  else
+	    {
+	      debug_printf("returning: %s", path);
+	      return ((char *)path);
 	    }
 	  break;
 	case '"':
