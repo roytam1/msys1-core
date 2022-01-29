@@ -42,12 +42,12 @@ details. */
 	 changes to the DLL and is mainly informative in nature. */
 
   /* The current cygwin version is 1.3.3 */
-  /* The current msys version is 1.0.12 */
+  /* The current msys version is 1.0.13 */
 
 #define CYGWIN_VERSION_DLL_MAJOR 1000
-#define CYGWIN_VERSION_DLL_MINOR 12
+#define CYGWIN_VERSION_DLL_MINOR 13
 #define DLL_VERSION_MAJOR 1000
-#define DLL_VERSION_MINOR 12
+#define DLL_VERSION_MINOR 13
 
       /* Major numbers before CYGWIN_VERSION_DLL_EPOCH are
 	 incompatible. */
@@ -147,10 +147,12 @@ details. */
        44: Export dirfd
        45: perprocess change, gamma_r, gammaf_r, lgamma_r, lgammaf_r
        46: Remove cygwin_getshared
+       47: CW_EXIT_PROCESS added.
+
      */
 
 #define CYGWIN_VERSION_API_MAJOR 0
-#define CYGWIN_VERSION_API_MINOR 46
+#define CYGWIN_VERSION_API_MINOR 47
 
      /* There is also a compatibity version number associated with the
 	shared memory regions.  It is incremented when incompatible

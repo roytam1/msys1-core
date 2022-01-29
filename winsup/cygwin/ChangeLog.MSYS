@@ -1,3 +1,74 @@
+2010.01.15  Cesar Strauss  <cestrauss@gmail.com>
+
+	* path.cc (msys_p2w): Check for end-of-string before "/"
+	for an argument beginning with "-".
+
+2010.01.15  Cesar Strauss  <cestrauss@gmail.com>
+
+	* path.cc (msys_p2w): Improve documentation.
+
+2010.01.15  Cesar Strauss  <cestrauss@gmail.com>
+
+	Add sanity checks to avoid possible crash.
+	* ismsys.cc (GetFileDataStr): null-terminate the return data.
+	(IsMsys): Bound-check the pointer passed to strcmp.
+
+2010.01.15  Cesar Strauss  <cestrauss@gmail.com>
+
+	* include/cygwin/version.h: Increment version to 1.0.13.
+
+2010.01.12  Charles Wilson  <mingw@cwilson.fastmail.fm>
+
+	Add pseudo-reloc support; implement CW_EXIT_PROCESS.
+	* lib/_cygwin_crt0_common.cc (_msys_crt0_common): Call
+	_pei386_runtime_relocator.
+	* lib/pseudo-reloc.c: New file (imported from cygwin).
+
+	2009-10-05  Charles Wilson  <cygwin@cwilson.fastmail.fm>
+	Add cygwin wrapper for ExitProcess and TerminateProcess.
+	* include/sys/cygwin.h: Declare new cygwin_getinfo_type
+	CW_EXIT_PROCESS.
+	* external.cc (exit_process): New function.
+	(cygwin_internal): Handle CW_EXIT_PROCESS.
+	* include/cygwin/version.h: Bump CYGWIN_VERSION_API_MINOR
+	to 47 to reflect the above change. 
+
+2010.01.12  Charles Wilson  <mingw@cwilson.fastmail.fm>
+
+	Other assorted changes ported from cygwin
+	* Makefile.in: Add $(W32API_LDFLAGS) to link step, to allow
+	linking against installed w32api.
+	* autoload.cc: Synchronize with modern cygwin.
+	* cygheap.cc (_csbrk): Avoid warning (with gcc3).
+	* cygthread.h: Make main_thread_id public.
+	* cygwin.sc: Bring closer to modern cygwin (and use
+	correct idioms for recent binutils). Add DWARF2 debugging
+	sections.
+	* dcrt0.cc (_dll_crt0): Avoid warning (with gcc3).
+	* errno.cc: No need for dllexport on sys_err objects,
+	so silence warning (gcc3).
+	* fhandler_socket.cc (fixup_before_fork_exec, fixup_after_fork,
+	dup, set_close_on_exec): Use different method for initing
+	winsock (required by cygwin.sc changes).
+	* miscfuncs.cc (low_priority_sleep): New function.
+	* net.cc (cygwin_gethostname): Fix call to wsock function gethostname.
+	* security.cc (get_group_sidlist): Modern w32api no longer defines
+	a QuadPart member of UUID structure, so use alternate method to
+	convert to long long.
+	* winbase.h: Synchronize with modern cygwin version (save the most
+	recent changes to ilockexch/ilockcmpexch).
+	* winsup.h: Moved declaration of low_priority_sleep() to...
+	* miscfuncs.h: here. New file.
+
+2010.01.11  Cesar Strauss  <cestrauss@gmail.com>
+
+	Merge gcc-3 improvements from cygwin.
+	2002-11-26  Thomas Pfaff  <tpfaff@gmx.net>
+	* cxx.cc: New file. Implement new, new[], delete and delete[]
+	operators and  __cxa_pure_virtual if compiled by gcc >=3.
+	* Makefile.in (DLL_OFILES): Add cxx.o.
+	Remove libstdc++.a from cygwin1.dll link step.
+
 2010.01.05  Cesar Strauss  <cestrauss@gmail.com>
 
 	* include/cygwin/version.h: Increment version to 1.0.12.
@@ -7,7 +78,7 @@
 	Improve symlink emulation.
 	* msys_symlink.cc: Document MSYS symlink semantics.
 	(msys_symlink): When the source path is relative, append it to the
- 	directory component of the destination. 
+	directory component of the destination.
 	Return failure if the destination exists, as per POSIX.
 	Use path_conv instead of msys_p2w().
 	Factor out the recursive copy operation to ...
